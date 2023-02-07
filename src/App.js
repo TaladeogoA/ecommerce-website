@@ -1,16 +1,16 @@
-// import CategoryItem from "./components/category-item/CategoryItem";
-// import categories from "./assets/categories.json";
-import "./App.scss";
-import CategoriesContainer from "./components/categories-container/CategoriesContainer";
+import { Routes, Route } from "react-router-dom";
+import Navigation from "./components/routes/navigation/Navigation";
+import Home from "./components/routes/home/Home";
+import SignIn from "./components/routes/sign-in/SignIn";
 
 const App = () => {
   return (
-    <CategoriesContainer />
-    // <div className="categories__container">
-    //   {categories.map((category) => {
-    //     return <CategoryItem key={category.id} category={category} />;
-    //   })}
-    // </div>
+    <Routes>
+      <Route path="/" element={<Navigation />}>
+        <Route index element={<Home />} />
+        <Route path="sign-in" element={<SignIn />} />
+      </Route>
+    </Routes>
   );
 };
 
