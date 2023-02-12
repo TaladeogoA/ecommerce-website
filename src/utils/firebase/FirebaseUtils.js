@@ -1,8 +1,14 @@
-// Description: This file contains the functions that are used to interact with the firebase database.
+// This code imports the necessary modules from Firebase and sets up the configuration for the Firebase app. It also sets up the Google authentication provider and exports the authentication and sign in providers.
 
 // import firebase modules
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 // firebase config
@@ -15,30 +21,32 @@ const firebaseConfig = {
   appId: "1:225631987073:web:8f59f7bb535aede380b480",
 };
 
-// initialize firebase app
 const firebaseApp = initializeApp(firebaseConfig);
 
-// initialize firestore
-const provider = new GoogleAuthProvider();
+const googleProvider = new GoogleAuthProvider();
 
-// set custom parameters
-provider.setCustomParameters({ prompt: "select_account" });
+googleProvider.setCustomParameters({
+  prompt: "select_account",
+});
 
-// export functions
+// export auth and signin porviders
 export const auth = getAuth();
-export const googlePopupSignIn = () => signInWithPopup(auth, provider);
+export const signInWithGooglePopup = () =>
+  signInWithPopup(auth, googleProvider);
+export const signInWithGoogleRedirect = () =>
+  signInWithRedirect(auth, googleProvider);
 
-// export database
-export const database = getFirestore();
+// export db
+export const db = getFirestore();
 
-export const createUserDocumentFromAuth = async (userAuth) => {
-  const userDocRef = doc(database, "users", userAuth.uid);
-  console.log(userDocRef);
+export const createUserDocumentFromAuth = async (
+  userAuth,
+  additionalInfo = {}
+) => {
+  const userDocRef = doc(db, "users", userAuth.uid);
+  const userSnapshot = await getDoc(userDocRef);
 
-  const userDocSnapshot = await getDoc(userDocRef);
-  console.log(userDocSnapshot);
-
-  if (userDocSnapshot.exists() === false) {
+  if (userSnapshot.exists() === false) {
     const { displayName, email } = userAuth;
     const createdAt = new Date();
 
@@ -47,11 +55,18 @@ export const createUserDocumentFromAuth = async (userAuth) => {
         displayName,
         email,
         createdAt,
+        ...additionalInfo,
       });
     } catch (error) {
-      console.log("Error creating user document", error.message);
+      console.log("error creating the user", error.message);
     }
   }
 
   return userDocRef;
+};
+
+export const createAuthUserWithEmailAndPassword = async (email, password) => {
+  if (!email || !password) return;
+
+  return await createUserWithEmailAndPassword(auth, email, password);
 };
